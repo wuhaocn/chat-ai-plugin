@@ -1,0 +1,34 @@
+plugins {
+    id 'java'
+}
+
+allprojects {
+    group = 'com.dify.message.router'
+    version = '1.0.0'
+}
+
+subprojects {
+    apply plugin: 'java'
+    java {
+        sourceCompatibility = '11'
+        targetCompatibility = '11'
+    }
+
+    repositories {
+        mavenCentral()
+        maven {
+            url "https://maven.ibm.com/nexus/content/repositories/releases"
+        }
+    }
+
+    dependencies {
+        implementation 'org.slf4j:slf4j-api:1.7.32'
+        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+        testImplementation 'org.springframework.boot:spring-boot-starter-test:2.7.0'
+    }
+
+    test {
+        useJUnitPlatform()
+    }
+}

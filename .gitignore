@@ -1,0 +1,14 @@
+target/
+**/lib/
+.settings/
+**/bin/
+.idea
+.gradle
+build
+.project
+*.iml
+**/out/
+build
+**/.DS_Store
+node_modules
+**/src/main/resources/application-dev.yml

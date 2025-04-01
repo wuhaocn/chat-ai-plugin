@@ -1,0 +1,3 @@
+rootProject.name = 'chat-ai-plugin'
+
+include ':message-router:message-router-ai'

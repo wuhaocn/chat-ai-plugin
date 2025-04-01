@@ -1,0 +1,52 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: message-router-dify
+  main:
+    allow-bean-definition-overriding: true
+  datasource:
+    url: jdbc:h2:file:${user.home}/data/ai/ai-plugin/data/message_router
+    username: sa
+    password: 
+    driver-class-name: org.h2.Driver
+    hikari:
+      connection-timeout: 30000
+      maximum-pool-size: 10
+      minimum-idle: 5
+      auto-commit: true
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: true
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        format_sql: true
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:db/init-h2.sql
+      encoding: UTF-8
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  profiles:
+    active: dev
+  mvc:
+    contentnegotiation:
+      defaultContentType: application/json
+      mediaTypes:
+        json: application/json
+        form: application/x-www-form-urlencoded
+      favorParameter: true
+      parameterName: format
+
+logging:
+  level:
+    com.message.router: INFO
+    org.springframework.web: INFO
+    org.hibernate.SQL: INFO
+    org.hibernate.type.descriptor.sql.BasicBinder: INFO 
