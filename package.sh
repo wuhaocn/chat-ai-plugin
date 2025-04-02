@@ -87,7 +87,7 @@ cp -r message-router/message-router-ui/dist/* release/frontend/dist/
 echo "创建前端启动脚本..."
 cat > release/frontend/start.sh << EOF
 cd "\$(dirname "\$0")"
-npx http-server dist -p 8081 --cors -a localhost -P http://localhost:8080 --spa
+npx http-server dist -p 8081 --cors -a localhost -P http://localhost:8080
 EOF
 
 chmod +x release/frontend/start.sh
@@ -97,6 +97,17 @@ cat > release/frontend/dist/serve.json << EOF
 {
   "rewrites": [
     { "source": "**", "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "**",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        }
+      ]
+    }
   ]
 }
 EOF
