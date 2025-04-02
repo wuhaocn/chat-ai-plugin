@@ -1,18 +1,3 @@
-plugins {
-    id 'java'
-    id 'org.springframework.boot' version '2.7.18'
-    id 'io.spring.dependency-management' version '1.0.15.RELEASE'
-}
-
-group = 'com.message.router'
-version = '1.0.0'
-sourceCompatibility = '11'
-targetCompatibility = '11'
-
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web:2.7.18'
     implementation 'org.springframework.boot:spring-boot-starter-validation:2.7.18'
@@ -42,3 +27,5 @@ dependencies {
     // Caffeine缓存
     implementation 'com.github.ben-manes.caffeine:caffeine:3.1.8'
 }
+
+apply from: '../../serverpkg.gradle'

@@ -3,12 +3,13 @@ plugins {
 }
 
 allprojects {
-    group = 'com.dify.message.router'
+    group = 'com.message.router'
     version = '1.0.0'
 }
 
 subprojects {
-    apply plugin: 'java'
+    apply plugin: 'java-library'
+    apply plugin: 'maven-publish'
     java {
         sourceCompatibility = '11'
         targetCompatibility = '11'

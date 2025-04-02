@@ -1,0 +1,151 @@
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'distribution'   //打包tar包
+
+ext {
+    versionTail = new Date().format('yyyyMMddHHmmss')
+    serviceName = System.getProperty("serviceName", project.name)
+    // 扩展信息,主要用于动态生成版本号
+    baseVersion = version
+    gitShortId = 'git  rev-parse --short HEAD'.execute().text.trim()
+    commitId = getGitCommitId()
+    gitHeadName = ""
+    isTag = false
+    branchName = getGitBranchName()
+    isCmdRelease = System.getProperty("versionStyle", "snapshot") == 'release'
+    isReleaseBranch = branchName.equalsIgnoreCase("dev") || branchName.equalsIgnoreCase("release") || branchName.equalsIgnoreCase("apollo-gradle") || branchName.startsWith("hotfix/") || branchName.startsWith("feat/") || branchName.startsWith("fix/")
+
+    println "group:${group}\tname:${name}\tbaseVersion:${baseVersion}\tbranchName:${branchName}\tisCmdRelease :${isCmdRelease} \t isTag:${isTag} \tisReleaseBranch:${isReleaseBranch}"
+
+    println "serviceName = ${serviceName} : ${gitHeadName}"
+    versionYamlInfo = ''
+    project.version = version
+    println "group:${group}\tname:${name}\tbaseVersion:${baseVersion}\tbranchName:${branchName}\tisCmdRelease :${isCmdRelease} \t isTag:${isTag} \tisReleaseBranch:${isReleaseBranch}\ttagetVersion:${version}"
+
+
+}
+
+
+
+jar {
+}
+
+
+def getGitCommitId() {
+    try {
+        return 'git rev-parse HEAD'.execute().text.trim()
+    }
+    catch (ignored) {
+        println ignored
+        return 1
+    }
+}
+
+// 获取仓库信息
+def getGitBranchName() {
+    try {
+        gitHeadName = 'git describe --all '.execute().text.trim()
+        println "gitBranchName:[${gitHeadName}]"
+        if (gitHeadName) {
+            //: heads/dev
+            if (gitHeadName.startsWith("heads/")) {
+                project.ext.branchName = gitHeadName.substring("heads/".size())
+            } else if (gitHeadName.startsWith("tags/")) {
+                project.ext.branchName = gitHeadName.substring("tags/".size())
+                project.ext.set("isTag", true)
+            } else if (gitHeadName.startsWith("remotes/origin/")) {
+                project.ext.branchName = gitHeadName.substring("remotes/origin/".size())
+            }
+        }
+        println "current Git HEAD is (pointing at):${branchName}"
+        return project.ext.branchName
+    } catch (ignored) {
+        println ignored
+        return ""
+    }
+}
+
+//------------ 下面是为了配合运维部署脚本, 打包.
+task createVersionYaml(dependsOn: 'jar') {
+    try {
+        if (isCmdRelease || isTag || isReleaseBranch) {
+            versionYamlInfo = "branch:\r\n  ${serviceName}: ${gitHeadName}\r\ncommit: ${commitId}\r\ntime: ${versionTail}\r\nversion: ${version}";
+        } else {
+            versionYamlInfo = "branch:\r\n  ${serviceName}: ${gitHeadName}\r\ncommit: ${commitId}\r\ntime: ${versionTail}\r\nversion: SNAPSHOT";
+
+        }
+        println versionYamlInfo
+        if (!file('build/package/').exists()) {
+            file('build/package/').mkdirs()
+        }
+        if (!file('build/package/lib/').exists()) {
+            file('build/package/lib/').mkdirs()
+        }
+        if (!file('build/package/conf/').exists()) {
+            file('build/package/conf/').mkdirs()
+        }
+        file('build/package/version.yaml').write(versionYamlInfo)
+        println "file  ==== " + file('build/package/version.yaml').exists()
+    } catch (ignored) {
+        println ignored
+        ignored.printStackTrace()
+        return ""
+    }
+
+    println 'build/package/version.yaml end'
+}
+task copyDep(type: Copy, dependsOn: 'createVersionYaml') {
+    from configurations.runtimeClasspath
+    into 'build/package/lib'
+}
+
+task copyJar(type: Copy, dependsOn: 'jar') {
+    from jar.archiveFile
+    into 'build/package/lib'
+}
+
+task copyConf(type: Copy) {
+    from 'src/main/resources'
+    include 'application.yml'
+    exclude 'application-dev.yml'
+    into 'build/package/conf'
+}
+
+task copyStartScript(type: Copy, dependsOn: 'copyDep') {
+    from 'src/main/resources/start.sh'
+    into 'build'
+    fileMode 0755
+}
+
+task copyResources(type: Copy, dependsOn: 'copyStartScript') {
+    from("src/main/resources") {
+        exclude "start.sh"
+    }
+    into("build/conf/")
+}
+
+task prepareFile(dependsOn: 'copyResources') {
+    println "copyResources file version.yaml exists ==== " + file('build/package/version.yaml').exists()
+}
+
+task buildTar(type: Tar, dependsOn: ['copyDep', 'copyJar', 'copyConf']) {
+    archiveBaseName = serviceName
+    archiveVersion = version
+    destinationDirectory = file('build')
+    from 'build/package'
+}
+
+distributions {
+    monitor {
+        println "file  ==== " + file("build/package/version.yaml").exists()
+        distributionBaseName = "${project.name}"
+        println "distributions baseName=${distributionBaseName}"
+        contents {
+            from { 'build/package' }
+        }
+    }
+}
+
+monitorDistTar.dependsOn 'prepareFile'
+monitorDistTar.compression = Compression.GZIP
+monitorDistTar.extension = 'tar.gz'

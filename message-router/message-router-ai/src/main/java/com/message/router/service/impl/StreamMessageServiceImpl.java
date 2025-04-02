@@ -35,6 +35,7 @@ public class StreamMessageServiceImpl implements StreamMessageService {
     private static final String TIMESTAMP = "Timestamp";
     private static final String SIGNATURE = "Signature";
     private static final String USERAGENT = "User-Agent";
+    private static final String STREAM_MESSAGE_PATH = "/v3/message/private/publish_stream.json";
     
     private final OkHttpClient okHttpClient;
     private final ObjectMapper objectMapper;
@@ -56,6 +57,11 @@ public class StreamMessageServiceImpl implements StreamMessageService {
     }
     
     private String generateSignature(String appSecret, String nonce, String timestamp) {
+        if (appSecret == null || nonce == null || timestamp == null) {
+            logger.error("Invalid parameters for signature generation: appSecret={}, nonce={}, timestamp={}", 
+                appSecret, nonce, timestamp);
+            throw new IllegalArgumentException("Parameters for signature generation cannot be null");
+        }
         StringBuilder toSign = new StringBuilder(appSecret).append(nonce).append(timestamp);
         return DigestUtils.sha1Hex(toSign.toString());
     }
@@ -114,7 +120,7 @@ public class StreamMessageServiceImpl implements StreamMessageService {
             String signature = generateSignature(rongCloudConfig.getAppSecret(), nonce, timestamp);
             
             Request request = new Request.Builder()
-                .url(rongCloudConfig.getStreamMessage().getApiUrl())
+                .url(rongCloudConfig.getStreamMessage().getApiUrl() + STREAM_MESSAGE_PATH)
                 .post(body)
                 .header(APPKEY, rongCloudConfig.getAppKey())
                 .header(NONCE, nonce)
@@ -187,7 +193,7 @@ public class StreamMessageServiceImpl implements StreamMessageService {
             String signature = generateSignature(rongCloudConfig.getAppSecret(), nonce, timestamp);
             
             Request request = new Request.Builder()
-                .url(rongCloudConfig.getStreamMessage().getApiUrl())
+                .url(rongCloudConfig.getStreamMessage().getApiUrl() + STREAM_MESSAGE_PATH)
                 .post(body)
                 .header(APPKEY, rongCloudConfig.getAppKey())
                 .header(NONCE, nonce)
