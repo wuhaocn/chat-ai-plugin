@@ -89,41 +89,83 @@ cat > release/frontend/start.sh << 'EOF'
 #!/bin/bash
 
 # 检查参数
-if [ "$#" -lt 1 ]; then
-    echo "用法: $0 <backend-url>"
-    echo "例如: $0 http://192.168.1.100:8080"
+if [ $# -lt 1 ]; then
+    echo "Usage: $0 <backend_url>"
     exit 1
 fi
 
-# 设置后端地址
+# 设置后端URL
 BACKEND_URL=$1
+
+# 创建 nginx 配置
+cat > "$(dirname "$0")/nginx.conf" << EOL
+worker_processes  1;
+
+events {
+    worker_connections  1024;
+}
+
+http {
+    default_type  application/octet-stream;
+
+    types {
+        text/html                             html htm;
+        text/css                              css;
+        application/javascript                 js;
+        image/jpeg                            jpg jpeg;
+        image/png                             png;
+        image/gif                             gif;
+        image/svg+xml                         svg;
+        application/font-woff                 woff;
+        application/font-woff2                woff2;
+        application/x-font-ttf                ttf;
+    }
+
+    sendfile        on;
+    keepalive_timeout  65;
+
+    error_log  "$(pwd)/error.log";
+    access_log "$(pwd)/access.log";
+
+    server {
+        listen       8081;
+        server_name  localhost;
+
+        location / {
+            root   "$(pwd)/dist";
+            index  index.html;
+            try_files \$uri \$uri/ /index.html;
+        }
+
+        location /api/ {
+            proxy_pass ${BACKEND_URL}/api/;
+            proxy_set_header Host \$host;
+            proxy_set_header X-Real-IP \$remote_addr;
+            proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto \$scheme;
+        }
+    }
+}
+EOL
 
 # 启动服务
 cd "$(dirname "$0")"
-npx http-server dist -p 8081 --cors -a 0.0.0.0 -P $BACKEND_URL
+NGINX_CONF="$(pwd)/nginx.conf"
+echo "Starting nginx with config: $NGINX_CONF"
+nginx -c "$NGINX_CONF" -t
+if [ $? -ne 0 ]; then
+    echo "Nginx configuration test failed"
+    exit 1
+fi
+nginx -c "$NGINX_CONF"
+if [ $? -ne 0 ]; then
+    echo "Failed to start nginx"
+    exit 1
+fi
+echo "Nginx started successfully"
 EOF
 
 chmod +x release/frontend/start.sh
-
-# 创建 serve.json 配置文件
-cat > release/frontend/dist/serve.json << EOF
-{
-  "rewrites": [
-    { "source": "**", "destination": "/index.html" }
-  ],
-  "headers": [
-    {
-      "source": "**",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-cache"
-        }
-      ]
-    }
-  ]
-}
-EOF
 
 # 创建总启动脚本
 echo "创建总启动脚本..."
@@ -144,9 +186,10 @@ APP_SECRET=$2
 API_URL=$3
 BACKEND_URL=$4
 
-# 杀掉之前的后端进程
-echo "清理之前的后端进程..."
+# 杀掉之前的进程
+echo "清理之前的进程..."
 pkill -f "java.*MessageRouterApplication" || true
+nginx -s stop || true
 
 # 启动后端服务
 echo "启动后端服务..."
@@ -166,7 +209,7 @@ FRONTEND_PID=$!
 
 # 等待用户中断
 echo "服务已启动，按 Ctrl+C 停止服务"
-trap 'kill $BACKEND_PID $FRONTEND_PID 2>/dev/null' SIGINT SIGTERM
+trap 'kill $BACKEND_PID; nginx -s stop' SIGINT SIGTERM
 wait $BACKEND_PID $FRONTEND_PID
 EOF
 
