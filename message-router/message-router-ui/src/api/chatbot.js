@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { API_ENDPOINTS } from '../config/api'
 
 export const useChatbotStore = defineStore('chatbot', {
   state: () => ({
@@ -11,7 +12,7 @@ export const useChatbotStore = defineStore('chatbot', {
     async fetchChatbots() {
       this.loading = true
       try {
-        const response = await fetch('/api/chatbots')
+        const response = await fetch(API_ENDPOINTS.chatbots)
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`)
         }
@@ -29,7 +30,7 @@ export const useChatbotStore = defineStore('chatbot', {
     async createChatbot(chatbotData) {
       this.loading = true
       try {
-        const response = await fetch('/api/chatbots', {
+        const response = await fetch(API_ENDPOINTS.chatbots, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -53,7 +54,7 @@ export const useChatbotStore = defineStore('chatbot', {
     async updateChatbot(id, chatbotData) {
       this.loading = true
       try {
-        const response = await fetch(`/api/chatbots/${id}`, {
+        const response = await fetch(`${API_ENDPOINTS.chatbots}/${id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json'
@@ -80,7 +81,7 @@ export const useChatbotStore = defineStore('chatbot', {
     async deleteChatbot(id) {
       this.loading = true
       try {
-        const response = await fetch(`/api/chatbots/${id}`, {
+        const response = await fetch(`${API_ENDPOINTS.chatbots}/${id}`, {
           method: 'DELETE'
         })
         if (!response.ok) {

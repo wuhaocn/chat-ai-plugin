@@ -1,4 +1,5 @@
 import { useChatbotStore } from './chatbot';
+import { API_ENDPOINTS } from '../config/api';
 
 // 全局变量
 let currentUserId = '';  // 当前用户ID
@@ -20,7 +21,7 @@ export const api = {
   // 获取会话历史
   async getConversationHistory() {
     try {
-      const response = await fetch('/api/messages/history');
+      const response = await fetch(API_ENDPOINTS.messages.history);
       if (!response.ok) {
         console.warn('获取会话历史失败:', response.status);
         return [];
@@ -52,7 +53,7 @@ export const api = {
       formData.append('msgUID', msgUID);
       formData.append('clientIp', window.location.hostname);
 
-      const response = await fetch('/api/messages/send', {
+      const response = await fetch(API_ENDPOINTS.messages.send, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'

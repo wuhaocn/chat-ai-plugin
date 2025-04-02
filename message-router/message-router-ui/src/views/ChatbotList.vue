@@ -254,11 +254,13 @@ const showCreateDialog = () => {
 
 const showEditDialog = (row) => {
   dialogType.value = 'edit'
-  // 将 chatbotHookHeaders 对象转换为数组格式
-  const headers = Object.entries(row.chatbotHookHeaders || {}).map(([key, value]) => ({
-    key,
-    value
-  }))
+  // 确保chatbotHookHeaders是一个对象
+  const headers = row.chatbotHookHeaders && typeof row.chatbotHookHeaders === 'object'
+    ? Object.entries(row.chatbotHookHeaders).map(([key, value]) => ({
+        key,
+        value
+      }))
+    : []
   form.value = {
     ...row,
     chatbotHookHeaders: headers
@@ -272,11 +274,20 @@ const handleSubmit = async () => {
   await formRef.value.validate(async (valid) => {
     if (valid) {
       try {
+        // 将chatbotHookHeaders从数组转换为对象
+        const formData = { ...form.value }
+        formData.chatbotHookHeaders = form.value.chatbotHookHeaders.reduce((acc, header) => {
+          if (header.key && header.value) {
+            acc[header.key] = header.value
+          }
+          return acc
+        }, {})
+
         if (dialogType.value === 'create') {
-          await store.createChatbot(form.value)
+          await store.createChatbot(formData)
           ElMessage.success('创建成功')
         } else {
-          await store.updateChatbot(form.value.chatbotId, form.value)
+          await store.updateChatbot(formData.chatbotId, formData)
           ElMessage.success('更新成功')
         }
         dialogVisible.value = false
