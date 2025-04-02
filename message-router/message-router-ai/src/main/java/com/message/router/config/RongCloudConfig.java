@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Configuration;
 public class RongCloudConfig {
     private String appKey;
     private String appSecret;
-    private StreamMessageConfig streamMessage;
+    private StreamMessageConfig streamMessage = new StreamMessageConfig();
 
     public String getAppKey() {
         return appKey;

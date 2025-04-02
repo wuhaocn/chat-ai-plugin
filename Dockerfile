@@ -17,9 +17,9 @@ COPY release/backend .
 COPY release/frontend/dist /usr/share/nginx/html
 
 # 设置环境变量
-ENV APP_KEY=""
-ENV APP_SECRET=""
-ENV API_URL=""
+ENV RONGCLOUD_APP_KEY=""
+ENV RONGCLOUD_APP_SECRET=""
+ENV RONGCLOUD_API_URL=""
 ENV BACKEND_URL=""
 
 # 创建启动脚本
@@ -69,7 +69,7 @@ EOL\n\
 nginx\n\
 \n\
 # 启动后端服务\n\
-cd /app && java -Dspring.profiles.active=dev -Dspring.config.location=file:conf/application.yml -cp "lib/*" com.message.router.MessageRouterApplication --app-key=${APP_KEY} --app-secret=${APP_SECRET} --api-url=${API_URL} --backend-url=${BACKEND_URL}' > /start.sh && \
+cd /app && java -Dspring.profiles.active=dev -Dspring.config.location=file:conf/application.yml -Dlogging.level.com.message.router=DEBUG -Drongcloud.app-key=${RONGCLOUD_APP_KEY} -Drongcloud.app-secret=${RONGCLOUD_APP_SECRET} -Drongcloud.stream-message.api-url=${RONGCLOUD_API_URL} -cp "lib/*" com.message.router.MessageRouterApplication' > /start.sh && \
 chmod +x /start.sh
 
 # 暴露端口
