@@ -85,9 +85,22 @@ cp -r message-router/message-router-ui/dist/* release/frontend/dist/
 
 # 创建前端启动脚本
 echo "创建前端启动脚本..."
-cat > release/frontend/start.sh << EOF
-cd "\$(dirname "\$0")"
-npx http-server dist -p 8081 --cors -a localhost -P http://localhost:8080
+cat > release/frontend/start.sh << 'EOF'
+#!/bin/bash
+
+# 检查参数
+if [ "$#" -lt 1 ]; then
+    echo "用法: $0 <backend-url>"
+    echo "例如: $0 http://192.168.1.100:8080"
+    exit 1
+fi
+
+# 设置后端地址
+BACKEND_URL=$1
+
+# 启动服务
+cd "$(dirname "$0")"
+npx http-server dist -p 8081 --cors -a 0.0.0.0 -P $BACKEND_URL
 EOF
 
 chmod +x release/frontend/start.sh
@@ -118,6 +131,19 @@ cat > release/start.sh << 'EOF'
 #!/bin/bash
 cd "$(dirname "$0")"
 
+# 检查参数
+if [ "$#" -lt 4 ]; then
+    echo "用法: $0 <app-key> <app-secret> <api-url> <backend-url>"
+    echo "例如: $0 test test http://localhost:8080 http://192.168.1.100:8080"
+    exit 1
+fi
+
+# 设置参数
+APP_KEY=$1
+APP_SECRET=$2
+API_URL=$3
+BACKEND_URL=$4
+
 # 杀掉之前的后端进程
 echo "清理之前的后端进程..."
 pkill -f "java.*MessageRouterApplication" || true
@@ -125,7 +151,7 @@ pkill -f "java.*MessageRouterApplication" || true
 # 启动后端服务
 echo "启动后端服务..."
 cd backend
-./start.sh "$1" "$2" "$3" &
+./start.sh "$APP_KEY" "$APP_SECRET" "$API_URL" &
 BACKEND_PID=$!
 
 # 等待后端服务启动
@@ -135,7 +161,7 @@ sleep 5
 # 启动前端服务
 echo "启动前端服务..."
 cd ../frontend
-./start.sh &
+./start.sh "$BACKEND_URL" &
 FRONTEND_PID=$!
 
 # 等待用户中断
@@ -150,4 +176,4 @@ echo "打包完成！"
 echo "发布文件位于 release 目录"
 echo "使用方法："
 echo "1. 进入 release 目录"
-echo "2. 运行 ./start.sh <app-key> <app-secret> <api-url>" 
+echo "2. 运行 ./start.sh <app-key> <app-secret> <api-url> <backend-url>" 
