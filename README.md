@@ -128,6 +128,8 @@ docker run -t --name message-router-ai \
   -e BACKEND_URL=${BACKEND_URL} \
   wuhaocn/message-router-ai:1.0.0
 ```
+## 示例
+![20250403-145951.jpeg](message-router%2Fdocs%2Fimg%2F20250403-145951.jpeg)
 
 ## 接口说明
 
