@@ -6,10 +6,10 @@
 
 ## 项目文档
 
-- [设计文档](./docs/design.md)
-- [API文档](./docs/api.md)
-- [代码规范](./docs/CODING_STANDARDS.md)
-- [设计风格](./docs/design-style.md)
+- [设计文档](./message-router/docs/design.md)
+- [API文档](./message-router/docs/api.md)
+- [代码规范](./message-router/docs/CODING_STANDARDS.md)
+- [设计风格](./message-router/docs/design-style.md)
 
 ## 功能特点
 
