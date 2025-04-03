@@ -87,6 +87,9 @@ sudo systemctl restart docker
 项目提供了`docker-build.sh`脚本用于构建Docker镜像：
 
 ```bash
+# 创建并启动buildx构建器
+docker buildx create --use --name multi-arch-builder
+
 # 执行构建脚本
 ./docker-build.sh
 ```
@@ -94,13 +97,13 @@ sudo systemctl restart docker
 该脚本会：
 1. 执行打包脚本
 2. 等待打包完成
-3. 构建Docker镜像
+3. 使用buildx构建多架构镜像(arm64和amd64)
 4. 输出镜像信息
 
 ### Docker运行
 
 ```bash
-# 单机部署示例
+# 单机部署示例(arm64架构)
 docker run -t --name message-router-ai \
   -p 18080:8080 \
   -p 18081:8081 \
@@ -108,17 +111,28 @@ docker run -t --name message-router-ai \
   -e RONGCLOUD_APP_SECRET=${RONGCLOUD_APP_SECRET} \
   -e RONGCLOUD_API_URL=${RONGCLOUD_API_URL} \
   -e BACKEND_URL=http://localhost:18080 \
+  --platform linux/arm64 \
   message-router-ai:latest
 
+# 集群部署示例(amd64架构)
+docker run -t --name message-router-ai \
+  -p 18080:8080 \
+  -p 18081:8081 \
+  -e RONGCLOUD_APP_KEY=${RONGCLOUD_APP_KEY} \
+  -e RONGCLOUD_APP_SECRET=${RONGCLOUD_APP_SECRET} \
+  -e RONGCLOUD_API_URL=${RONGCLOUD_API_URL} \
+  -e BACKEND_URL=http://10.3.13.81:18080 \
+  --platform linux/amd64 \
+  message-router-ai:latest
 ```
 
 ### Docker Hub镜像
 
 ```bash
-# 拉取镜像
-docker pull wuhaocn/message-router-ai:1.0.0
+# 拉取镜像(自动选择对应架构)
+docker pull wuhaocn/message-router-ai:1.0.1
 
-# 运行容器
+# 运行容器(自动选择对应架构)
 docker run -t --name message-router-ai \
   -p 18080:8080 \
   -p 18081:8081 \
@@ -126,8 +140,42 @@ docker run -t --name message-router-ai \
   -e RONGCLOUD_APP_SECRET=${RONGCLOUD_APP_SECRET} \
   -e RONGCLOUD_API_URL=${RONGCLOUD_API_URL} \
   -e BACKEND_URL=${BACKEND_URL} \
-  wuhaocn/message-router-ai:1.0.0
+  wuhaocn/message-router-ai:1.0.1
 ```
+
+## Docker 部署
+
+### 本地构建
+使用 `docker-build.sh` 脚本在本地构建 Docker 镜像：
+
+```bash
+./docker-build.sh
+```
+
+这将构建一个本地镜像 `message-router-ai:latest`，适用于本地开发和测试。
+
+### 多架构构建
+使用 `docker-build-multi-arch.sh` 脚本构建支持多架构的 Docker 镜像并推送到 Docker Hub：
+
+```bash
+./docker-build-multi-arch.sh
+```
+
+这将构建并推送支持 arm64 和 amd64 架构的镜像 `wuhaocn/message-router-ai:1.0.1` 到 Docker Hub。
+
+### 运行容器
+从 Docker Hub 拉取镜像并运行：
+
+```bash
+docker pull wuhaocn/message-router-ai:1.0.1
+docker run -d \
+  --name message-router-ai \
+  -p 8080:8080 \
+  -p 3000:3000 \
+  -e BACKEND_URL=http://localhost:8080 \
+  wuhaocn/message-router-ai:1.0.1
+```
+
 ## 示例
 ![20250403-145951.jpeg](message-router%2Fdocs%2Fimg%2F20250403-145951.jpeg)
 
