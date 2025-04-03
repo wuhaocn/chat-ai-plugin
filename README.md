@@ -56,12 +56,12 @@ sudo systemctl restart docker
 
 ### 环境变量
 
-| 变量名 | 说明 | 示例值 |
-|--------|------|--------|
-| RONGCLOUD_APP_KEY | 融云应用Key | ${RONGCLOUD_APP_KEY} |
+| 变量名 | 说明 | 示例值                     |
+|--------|------|-------------------------|
+| RONGCLOUD_APP_KEY | 融云应用Key | ${RONGCLOUD_APP_KEY}    |
 | RONGCLOUD_APP_SECRET | 融云应用Secret | ${RONGCLOUD_APP_SECRET} |
-| RONGCLOUD_API_URL | 融云API地址 | ${RONGCLOUD_API_URL} |
-| BACKEND_URL | Message Router AI后端服务地址，用于内部服务间通信 | http://10.3.13.81:18080 |
+| RONGCLOUD_API_URL | 融云API地址 | ${RONGCLOUD_API_URL}    |
+| BACKEND_URL | Message Router AI后端服务地址，用于内部服务间通信 | http://127.0.0.1:18080  |
 
 ### 配置文件
 
@@ -110,7 +110,7 @@ docker run -t --name message-router-ai \
   -e RONGCLOUD_APP_KEY=${RONGCLOUD_APP_KEY} \
   -e RONGCLOUD_APP_SECRET=${RONGCLOUD_APP_SECRET} \
   -e RONGCLOUD_API_URL=${RONGCLOUD_API_URL} \
-  -e BACKEND_URL=http://localhost:18080 \
+  -e BACKEND_URL=http://127.0.0.1:18080 \
   --platform linux/arm64 \
   message-router-ai:latest
 
@@ -121,7 +121,7 @@ docker run -t --name message-router-ai \
   -e RONGCLOUD_APP_KEY=${RONGCLOUD_APP_KEY} \
   -e RONGCLOUD_APP_SECRET=${RONGCLOUD_APP_SECRET} \
   -e RONGCLOUD_API_URL=${RONGCLOUD_API_URL} \
-  -e BACKEND_URL=http://10.3.13.81:18080 \
+  -e BACKEND_URL=http://127.0.0.1:18080 \
   --platform linux/amd64 \
   message-router-ai:latest
 ```
