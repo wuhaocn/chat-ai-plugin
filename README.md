@@ -61,7 +61,7 @@ sudo systemctl restart docker
 | RONGCLOUD_APP_KEY | 融云应用Key | ${RONGCLOUD_APP_KEY} |
 | RONGCLOUD_APP_SECRET | 融云应用Secret | ${RONGCLOUD_APP_SECRET} |
 | RONGCLOUD_API_URL | 融云API地址 | ${RONGCLOUD_API_URL} |
-| BACKEND_URL | Message Router AI后端服务地址 | http://127.0.0.1:18080 |
+| BACKEND_URL | Message Router AI后端服务地址，用于内部服务间通信 | http://10.3.13.81:18080 |
 
 ### 配置文件
 
@@ -110,15 +110,6 @@ docker run -t --name message-router-ai \
   -e BACKEND_URL=http://localhost:18080 \
   message-router-ai:latest
 
-# 集群部署示例
-docker run -t --name message-router-ai \
-  -p 18080:8080 \
-  -p 18081:8081 \
-  -e RONGCLOUD_APP_KEY=${RONGCLOUD_APP_KEY} \
-  -e RONGCLOUD_APP_SECRET=${RONGCLOUD_APP_SECRET} \
-  -e RONGCLOUD_API_URL=${RONGCLOUD_API_URL} \
-  -e BACKEND_URL=http://10.3.13.81:18080 \
-  message-router-ai:latest
 ```
 
 ### Docker Hub镜像
@@ -131,35 +122,79 @@ docker pull wuhaocn/message-router-ai:1.0.0
 docker run -t --name message-router-ai \
   -p 18080:8080 \
   -p 18081:8081 \
-  -e RONGCLOUD_APP_KEY=test_key \
-  -e RONGCLOUD_APP_SECRET=test_secret \
-  -e RONGCLOUD_API_URL=https://api.rong-api.com \
-  -e BACKEND_URL=http://127.0.0.1:18080 \
+  -e RONGCLOUD_APP_KEY=${RONGCLOUD_APP_KEY} \
+  -e RONGCLOUD_APP_SECRET=${RONGCLOUD_APP_SECRET} \
+  -e RONGCLOUD_API_URL=${RONGCLOUD_API_URL} \
+  -e BACKEND_URL=${BACKEND_URL} \
   wuhaocn/message-router-ai:1.0.0
 ```
 
 ## 接口说明
 
-### 消息接收接口
+### 消息接口
 
-- 路径: `/message/receive`
-- 方法: POST
-- 说明: 接收融云IM消息
-- 请求体: JSON格式的消息内容
-
-### 消息发送接口
-
-- 路径: `/message/send`
+#### 发送消息
+- 路径: `/api/messages/send`
 - 方法: POST
 - 说明: 发送消息到融云IM
 - 请求体: JSON格式的消息内容
+- 示例:
+```json
+{
+    "fromUserId": "user1",
+    "toUserId": "user2",
+    "objectName": "RC:TxtMsg",
+    "content": "{\"content\":\"Hello\"}"
+}
+```
 
-### AI对话接口
-
-- 路径: `/ai/chat`
+#### 发送消息(表单)
+- 路径: `/api/messages/send`
 - 方法: POST
-- 说明: 与AI进行对话
-- 请求体: JSON格式的对话内容
+- Content-Type: application/x-www-form-urlencoded
+- 参数:
+  - message: 消息对象
+  - signTimestamp: 签名时间戳(可选)
+  - nonce: 随机数(可选)
+  - signature: 签名(可选)
+  - appKey: 应用Key(可选)
+
+#### 获取会话历史
+- 路径: `/api/messages/history`
+- 方法: GET
+- 说明: 获取消息历史记录
+
+### 聊天机器人接口
+
+#### 获取聊天机器人
+- 路径: `/api/chatbots/{id}`
+- 方法: GET
+- 说明: 获取指定ID的聊天机器人信息
+- 参数: id - 聊天机器人ID
+
+#### 获取所有聊天机器人
+- 路径: `/api/chatbots`
+- 方法: GET
+- 说明: 获取所有聊天机器人信息
+
+#### 创建聊天机器人
+- 路径: `/api/chatbots`
+- 方法: POST
+- 说明: 创建新的聊天机器人
+- 请求体: JSON格式的聊天机器人信息
+
+#### 更新聊天机器人
+- 路径: `/api/chatbots/{id}`
+- 方法: PUT
+- 说明: 更新指定ID的聊天机器人信息
+- 参数: id - 聊天机器人ID
+- 请求体: JSON格式的聊天机器人信息
+
+#### 删除聊天机器人
+- 路径: `/api/chatbots/{id}`
+- 方法: DELETE
+- 说明: 删除指定ID的聊天机器人
+- 参数: id - 聊天机器人ID
 
 ## 开发指南
 

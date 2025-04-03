@@ -1,4 +1,71 @@
-# 消息路由系统 API 文档
+# API 文档
+
+## 消息接口
+
+### 发送消息
+
+- 路径: `/api/messages/send`
+- 方法: POST
+- 说明: 发送消息到融云IM
+- 请求体: JSON格式的消息内容
+- 示例:
+```json
+{
+    "fromUserId": "user1",
+    "toUserId": "user2",
+    "objectName": "RC:TxtMsg",
+    "content": "{\"content\":\"Hello\"}"
+}
+```
+
+### 发送消息(表单)
+
+- 路径: `/api/messages/send`
+- 方法: POST
+- Content-Type: application/x-www-form-urlencoded
+- 参数:
+  - message: 消息对象
+  - signTimestamp: 签名时间戳(可选)
+  - nonce: 随机数(可选)
+  - signature: 签名(可选)
+  - appKey: 应用Key(可选)
+
+## 聊天机器人接口
+
+### 获取聊天机器人
+
+- 路径: `/api/chatbots/{id}`
+- 方法: GET
+- 说明: 获取指定ID的聊天机器人信息
+- 参数: id - 聊天机器人ID
+
+### 获取所有聊天机器人
+
+- 路径: `/api/chatbots`
+- 方法: GET
+- 说明: 获取所有聊天机器人信息
+
+### 创建聊天机器人
+
+- 路径: `/api/chatbots`
+- 方法: POST
+- 说明: 创建新的聊天机器人
+- 请求体: JSON格式的聊天机器人信息
+
+### 更新聊天机器人
+
+- 路径: `/api/chatbots/{id}`
+- 方法: PUT
+- 说明: 更新指定ID的聊天机器人信息
+- 参数: id - 聊天机器人ID
+- 请求体: JSON格式的聊天机器人信息
+
+### 删除聊天机器人
+
+- 路径: `/api/chatbots/{id}`
+- 方法: DELETE
+- 说明: 删除指定ID的聊天机器人
+- 参数: id - 聊天机器人ID
 
 ## 1. 消息发送接口
 
